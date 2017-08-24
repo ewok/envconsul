@@ -411,6 +411,18 @@ func (cli *CLI) ParseFlags(args []string) (*Config, []string, bool, bool, error)
 		return nil
 	}), "secret", "")
 
+	flags.Var((funcVar)(func(s string) error {
+		p, err := ParsePrefixConfig(s)
+		if err != nil {
+			return err
+		}
+		*c.Secrets = append(*c.Secrets, &PrefixConfig{
+			Path:     p.Path,
+			NoPrefix: config.Bool(true),
+		})
+		return nil
+	}), "secret-no-prefix", "")
+
 	flags.Var((funcBoolVar)(func(b bool) error {
 		c.Syslog.Enabled = config.Bool(b)
 		return nil
@@ -793,6 +805,10 @@ Options:
       A secret path to watch in Vault, multiple prefixes are merged from left
       to right, with the right-most result taking precedence, including any
       values specified with -prefix
+
+  -secret-no-prefix=<prefix>
+      Same like -secret but doesn't prefix the environment
+      variable name with the path
 
   -syslog
       Send the output to syslog instead of standard error and standard out. The
